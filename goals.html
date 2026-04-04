@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Vault — Goals</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="shared.css"/>
+  <style>
+    .bg-orbs { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+    .bg-orb { position: absolute; border-radius: 50%; filter: blur(100px); animation: drift 10s ease-in-out infinite; }
+    .bg-orb-1 { width: 400px; height: 400px; background: rgba(201,168,76,0.05); top: -100px; right: 0; }
+    .bg-orb-2 { width: 300px; height: 300px; background: rgba(82,192,122,0.04); bottom: 0; left: 0; animation-delay:-5s; }
+    @keyframes drift { 0%,100%{transform:translate(0,0)} 50%{transform:translate(20px,-20px)} }
+
+    .page { position: relative; z-index: 1; }
+
+    /* Header row */
+    .goals-header {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      gap: 1rem; flex-wrap: wrap;
+      margin-bottom: 1.75rem;
+    }
+
+    /* Goals grid */
+    .goals-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .goal-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.2s;
+      animation: popIn 0.4s cubic-bezier(0.23,1,0.32,1) both;
+    }
+    @keyframes popIn {
+      from { opacity: 0; transform: scale(0.96) translateY(10px); }
+      to   { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .goal-card:hover { border-color: var(--border-2); transform: translateY(-3px); box-shadow: 0 12px 40px rgba(0,0,0,0.3); }
+
+    .goal-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(to right, var(--gold), var(--gold-light));
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .goal-card:hover::before { opacity: 1; }
+
+    .goal-card-top {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      margin-bottom: 1rem;
+      gap: 0.75rem;
+    }
+
+    .goal-icon-wrap {
+      width: 52px; height: 52px;
+      border-radius: 12px;
+      background: var(--gold-dim);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem;
+      flex-shrink: 0;
+    }
+    .goal-icon-wrap img {
+      width: 32px; height: 32px;
+      border-radius: 8px; object-fit: cover;
+    }
+
+    .goal-actions {
+      display: flex; gap: 6px;
+      opacity: 0; transition: opacity 0.2s;
+    }
+    .goal-card:hover .goal-actions { opacity: 1; }
+
+    .icon-btn {
+      width: 30px; height: 30px;
+      border-radius: 7px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px;
+      transition: all 0.15s;
+    }
+    .icon-btn:hover { background: var(--surface-2); color: var(--text); border-color: var(--border-2); }
+    .icon-btn.danger:hover { background: rgba(224,82,82,0.12); color: #e08080; border-color: rgba(224,82,82,0.25); }
+
+    .goal-name {
+      font-size: 1.05rem;
+      font-weight: 500;
+      margin-bottom: 0.25rem;
+      line-height: 1.3;
+    }
+
+    .goal-amount {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--gold-light);
+      margin-bottom: 0.3rem;
+    }
+
+    .goal-sub {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-bottom: 1rem;
+    }
+
+    .progress-bar { height: 6px; background: var(--border); border-radius: 999px; overflow: hidden; }
+    .progress-fill { height: 100%; background: linear-gradient(to right, var(--gold), var(--gold-light)); border-radius: 999px; transition: width 1.2s cubic-bezier(0.23,1,0.32,1); }
+
+    .goal-footer {
+      margin-top: 1rem;
+      display: flex; align-items: center; justify-content: space-between;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    .badge {
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 0.73rem;
+      font-weight: 500;
+    }
+    .badge-active { background: rgba(201,168,76,0.12); color: var(--gold-light); border: 1px solid rgba(201,168,76,0.2); }
+    .badge-complete { background: rgba(82,192,122,0.12); color: #52c07a; border: 1px solid rgba(82,192,122,0.2); }
+
+    /* File section in card */
+    .file-section {
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border);
+      display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;
+    }
+    .file-label {
+      font-size: 0.75rem;
+      color: var(--muted);
+      display: flex; align-items: center; gap: 5px;
+    }
+
+    /* Empty state */
+    .empty-state {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 4rem 2rem;
+      color: var(--muted);
+    }
+    .empty-state .icon { font-size: 3rem; margin-bottom: 1rem; opacity: 0.4; }
+    .empty-state h3 { font-family: 'Playfair Display', serif; font-size: 1.3rem; color: var(--text); margin-bottom: 0.5rem; }
+    .empty-state p { font-size: 0.9rem; margin-bottom: 1.5rem; }
+
+    /* Modal file upload zone */
+    .upload-zone {
+      border: 2px dashed var(--border);
+      border-radius: 10px;
+      padding: 1.5rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      color: var(--muted);
+      font-size: 0.85rem;
+      margin-top: 0.5rem;
+    }
+    .upload-zone:hover { border-color: var(--gold); background: var(--gold-dim); color: var(--text); }
+    .upload-zone input[type=file] { display: none; }
+    .upload-zone .uz-icon { font-size: 1.8rem; margin-bottom: 0.5rem; }
+
+    /* Toast */
+    .toast-container {
+      position: fixed; bottom: 1.5rem; right: 1.5rem;
+      z-index: 9999;
+      display: flex; flex-direction: column; gap: 0.5rem;
+    }
+    .toast {
+      padding: 12px 18px;
+      border-radius: 10px;
+      font-size: 0.87rem;
+      max-width: 320px;
+      animation: toastIn 0.3s ease both;
+      display: flex; align-items: center; gap: 8px;
+    }
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateY(10px) scale(0.97); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .toast-success { background: #1a2e24; border: 1px solid rgba(82,192,122,0.3); color: #52c07a; }
+    .toast-error   { background: #2e1a1a; border: 1px solid rgba(224,82,82,0.3); color: #e08080; }
+
+    /* Toolbar */
+    .toolbar {
+      display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+    }
+    .search-input {
+      flex: 1; min-width: 200px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      padding: 10px 14px;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.88rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .search-input:focus { border-color: var(--gold); }
+    .search-input::placeholder { color: rgba(240,236,228,0.25); }
+  </style>
+</head>
+<body>
+
+<div class="bg-orbs">
+  <div class="bg-orb bg-orb-1"></div>
+  <div class="bg-orb bg-orb-2"></div>
+</div>
+
+<!-- Navbar -->
+<nav class="navbar">
+  <a class="nav-logo" href="dashboard.html">
+    <div class="nav-logo-icon">🏦</div>
+    <span class="nav-logo-name">Vault</span>
+  </a>
+  <div class="nav-links">
+    <a href="dashboard.html" class="nav-link">Dashboard</a>
+    <a href="goals.html" class="nav-link active">Goals</a>
+  </div>
+  <div class="nav-right">
+    <div class="nav-user">
+      <div class="nav-avatar" id="avatarEl">U</div>
+      <span id="usernameEl">User</span>
+    </div>
+    <button class="btn-logout" onclick="logout()">Sign Out</button>
+  </div>
+</nav>
+
+<!-- Toast container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- Page -->
+<div class="page">
+  <div class="goals-header">
+    <div class="page-header" style="margin-bottom:0">
+      <h1>Your Goals</h1>
+      <p>Track, manage, and achieve every financial milestone.</p>
+    </div>
+    <button class="btn btn-primary" onclick="openAddModal()">
+      ＋ New Goal
+    </button>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <input class="search-input" id="searchInput" type="text" placeholder="🔍  Search goals…" oninput="filterGoals()"/>
+  </div>
+
+  <!-- Goals grid -->
+  <div class="goals-grid" id="goalsGrid">
+    <div style="grid-column:1/-1">
+      <div class="loading-center">
+        <div class="spinner"></div>
+        <span>Loading your goals…</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── Add Goal Modal ─── -->
+<div class="modal-overlay" id="addModal" style="display:none" onclick="closeIfOverlay(event,'addModal')">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title">New Goal</h3>
+      <button class="modal-close" onclick="closeModal('addModal')">✕</button>
+    </div>
+
+    <div id="addAlert"></div>
+
+    <div class="field">
+      <label>Goal Name *</label>
+      <input id="addName" type="text" placeholder="e.g. Emergency Fund"/>
+    </div>
+    <div class="field">
+      <label>Target Amount (₹) *</label>
+      <input id="addAmount" type="number" placeholder="50000" min="1"/>
+    </div>
+    <div class="field">
+      <label>Amount Saved (₹)</label>
+      <input id="addSaved" type="number" placeholder="0" min="0"/>
+    </div>
+    <div class="field">
+      <label>Icon URL <span style="color:var(--muted);text-transform:none;font-size:0.75rem">(optional)</span></label>
+      <input id="addIcon" type="url" placeholder="https://example.com/icon.png"/>
+    </div>
+
+    <div style="display:flex;gap:0.75rem;margin-top:1.25rem">
+      <button class="btn btn-ghost" style="flex:1" onclick="closeModal('addModal')">Cancel</button>
+      <button class="btn btn-primary" style="flex:2" id="addSubmitBtn" onclick="createGoal()">Create Goal</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── File Upload Modal ─── -->
+<div class="modal-overlay" id="uploadModal" style="display:none" onclick="closeIfOverlay(event,'uploadModal')">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title">Attach Document</h3>
+      <button class="modal-close" onclick="closeModal('uploadModal')">✕</button>
+    </div>
+    <p style="color:var(--muted);font-size:0.88rem;margin-bottom:1rem" id="uploadGoalName"></p>
+    <div id="uploadAlert"></div>
+
+    <div class="upload-zone" onclick="document.getElementById('fileInput').click()">
+      <input type="file" id="fileInput" onchange="handleFileSelect(event)"/>
+      <div class="uz-icon">📎</div>
+      <p>Click to choose a file</p>
+      <p style="font-size:0.75rem;margin-top:4px;color:rgba(240,236,228,0.3)">Max 10MB</p>
+    </div>
+
+    <div id="selectedFile" style="display:none;margin-top:0.75rem;padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:9px;font-size:0.85rem;display:flex;align-items:center;gap:8px"></div>
+
+    <div style="display:flex;gap:0.75rem;margin-top:1.25rem">
+      <button class="btn btn-ghost" style="flex:1" onclick="closeModal('uploadModal')">Cancel</button>
+      <button class="btn btn-primary" style="flex:2" id="uploadSubmitBtn" onclick="uploadFile()">Upload File</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const API = 'http://localhost:5000';
+
+  // Auth guard
+  const user = JSON.parse(localStorage.getItem('vault_user') || 'null');
+  if (!user) window.location.href = 'index.html';
+  document.getElementById('usernameEl').textContent = user.username;
+  document.getElementById('avatarEl').textContent = user.username[0].toUpperCase();
+
+  function logout() {
+    localStorage.removeItem('vault_user');
+    window.location.href = 'index.html';
+  }
+
+  // ── State ──
+  let allGoals = [];
+  let uploadTargetId = null;
+  let selectedFileObj = null;
+
+  // ── Toast ──
+  function toast(msg, type = 'success') {
+    const el = document.createElement('div');
+    el.className = `toast toast-${type}`;
+    el.innerHTML = `<span>${type === 'success' ? '✓' : '✕'}</span> ${msg}`;
+    document.getElementById('toastContainer').appendChild(el);
+    setTimeout(() => el.remove(), 3500);
+  }
+
+  // ── Modal helpers ──
+  function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+  function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+  function closeIfOverlay(e, id) { if (e.target === e.currentTarget) closeModal(id); }
+
+  // ── Format ──
+  function fmt(n) { return '₹' + Number(n).toLocaleString('en-IN'); }
+
+  // ── Fetch goals ──
+  async function loadGoals() {
+    const grid = document.getElementById('goalsGrid');
+    grid.innerHTML = `<div style="grid-column:1/-1"><div class="loading-center"><div class="spinner"></div><span>Loading goals…</span></div></div>`;
+    try {
+      const res = await fetch(`${API}/goals`);
+      const { data } = await res.json();
+      allGoals = data;
+      renderGoals(allGoals);
+    } catch (e) {
+      grid.innerHTML = `<div class="empty-state"><div class="icon">⚠️</div><h3>Connection Error</h3><p>Could not reach the server. Make sure the backend is running on port 5000.</p></div>`;
+    }
+  }
+
+  // ── Render ──
+  function renderGoals(goals) {
+    const grid = document.getElementById('goalsGrid');
+    if (!goals.length) {
+      grid.innerHTML = `
+        <div class="empty-state">
+          <div class="icon">🎯</div>
+          <h3>No Goals Found</h3>
+          <p>Create your first financial goal to get started.</p>
+          <button class="btn btn-primary" onclick="openAddModal()">＋ Create Goal</button>
+        </div>`;
+      return;
+    }
+
+    grid.innerHTML = goals.map((g, i) => {
+      const pct = Math.min(100, Math.round(((g.savedAmount || 0) / g.targetAmount) * 100));
+      const complete = pct >= 100;
+      const iconHtml = g.icon
+        ? `<img src="${g.icon}" alt="" onerror="this.parentElement.innerHTML='🎯'"/>`
+        : '🎯';
+      const hasFile = g.attachedFile?.filename;
+
+      return `
+      <div class="goal-card" style="animation-delay:${i * 0.06}s">
+        <div class="goal-card-top">
+          <div class="goal-icon-wrap">${iconHtml}</div>
+          <div class="goal-actions">
+            <button class="icon-btn" onclick="openUploadModal('${g._id}', '${escHtml(g.name)}')" title="Attach file">📎</button>
+            ${hasFile ? `<button class="icon-btn" onclick="downloadFile('${g._id}')" title="Download file">⬇️</button>` : ''}
+            <button class="icon-btn danger" onclick="deleteGoal('${g._id}', '${escHtml(g.name)}')" title="Delete">🗑</button>
+          </div>
+        </div>
+
+        <div class="goal-name">${escHtml(g.name)}</div>
+        <div class="goal-amount">${fmt(g.targetAmount)}</div>
+        <div class="goal-sub">Saved: ${fmt(g.savedAmount || 0)}</div>
+
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:0%" data-width="${pct}%"></div>
+        </div>
+
+        <div class="goal-footer">
+          <span>${pct}% complete</span>
+          <span class="badge ${complete ? 'badge-complete' : 'badge-active'}">${complete ? '✓ Done' : 'Active'}</span>
+        </div>
+
+        ${hasFile ? `
+        <div class="file-section">
+          <span class="file-label">📄 ${escHtml(g.attachedFile.originalName)}</span>
+          <button class="btn btn-ghost" style="padding:4px 10px;font-size:0.75rem" onclick="downloadFile('${g._id}')">Download</button>
+        </div>` : ''}
+      </div>`;
+    }).join('');
+
+    // Animate progress bars after paint
+    requestAnimationFrame(() => {
+      document.querySelectorAll('.progress-fill').forEach(el => {
+        el.style.width = el.dataset.width;
+      });
+    });
+  }
+
+  function escHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // ── Filter ──
+  function filterGoals() {
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    renderGoals(allGoals.filter(g => g.name.toLowerCase().includes(q)));
+  }
+
+  // ── Create goal ──
+  function openAddModal() {
+    document.getElementById('addName').value = '';
+    document.getElementById('addAmount').value = '';
+    document.getElementById('addSaved').value = '';
+    document.getElementById('addIcon').value = '';
+    document.getElementById('addAlert').innerHTML = '';
+    openModal('addModal');
+    document.getElementById('addName').focus();
+  }
+
+  async function createGoal() {
+    const btn = document.getElementById('addSubmitBtn');
+    const alertEl = document.getElementById('addAlert');
+    alertEl.innerHTML = '';
+
+    const name = document.getElementById('addName').value.trim();
+    const targetAmount = parseFloat(document.getElementById('addAmount').value);
+    const savedAmount = parseFloat(document.getElementById('addSaved').value) || 0;
+    const icon = document.getElementById('addIcon').value.trim();
+
+    if (!name) { showAlert(alertEl, 'Please enter a goal name.', 'error'); return; }
+    if (!targetAmount || targetAmount <= 0) { showAlert(alertEl, 'Please enter a valid target amount.', 'error'); return; }
+    if (savedAmount < 0) { showAlert(alertEl, 'Saved amount cannot be negative.', 'error'); return; }
+
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner" style="border-top-color:#0b0f19;border-color:rgba(11,15,25,0.3)"></span> Creating…';
+
+    try {
+      const res = await fetch(`${API}/goals`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, targetAmount, savedAmount, icon: icon || null }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.message || 'Failed to create goal');
+
+      closeModal('addModal');
+      toast('Goal created successfully! 🎯');
+      await loadGoals();
+    } catch (err) {
+      showAlert(alertEl, err.message, 'error');
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = 'Create Goal';
+    }
+  }
+
+  // ── Delete goal ──
+  async function deleteGoal(id, name) {
+    if (!confirm(`Delete goal "${name}"? This cannot be undone.`)) return;
+    try {
+      const res = await fetch(`${API}/goals/${id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Failed to delete');
+      toast(`"${name}" deleted.`, 'error');
+      await loadGoals();
+    } catch (err) {
+      toast(err.message, 'error');
+    }
+  }
+
+  // ── Upload ──
+  function openUploadModal(id, name) {
+    uploadTargetId = id;
+    selectedFileObj = null;
+    document.getElementById('uploadGoalName').textContent = `Attaching file to: ${name}`;
+    document.getElementById('uploadAlert').innerHTML = '';
+    document.getElementById('selectedFile').style.display = 'none';
+    document.getElementById('fileInput').value = '';
+    openModal('uploadModal');
+  }
+
+  function handleFileSelect(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    selectedFileObj = file;
+    const el = document.getElementById('selectedFile');
+    el.style.display = 'flex';
+    el.innerHTML = `📄 <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(file.name)}</span> <span style="color:var(--muted)">${(file.size/1024).toFixed(1)} KB</span>`;
+  }
+
+  async function uploadFile() {
+    if (!selectedFileObj) { toast('Please select a file first.', 'error'); return; }
+    const btn = document.getElementById('uploadSubmitBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner" style="border-top-color:#0b0f19;border-color:rgba(11,15,25,0.3)"></span> Uploading…';
+
+    const fd = new FormData();
+    fd.append('file', selectedFileObj);
+
+    try {
+      const res = await fetch(`${API}/goals/${uploadTargetId}/upload`, { method: 'POST', body: fd });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Upload failed');
+      closeModal('uploadModal');
+      toast('File uploaded successfully! 📎');
+      await loadGoals();
+    } catch (err) {
+      showAlert(document.getElementById('uploadAlert'), err.message, 'error');
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = 'Upload File';
+    }
+  }
+
+  // ── Download ──
+  async function downloadFile(id) {
+    try {
+      const res = await fetch(`${API}/goals/${id}/download`);
+      if (!res.ok) { toast('File not found on server.', 'error'); return; }
+      const blob = await res.blob();
+      const cd = res.headers.get('content-disposition') || '';
+      const nameMatch = cd.match(/filename="?([^"]+)"?/);
+      const filename = nameMatch ? nameMatch[1] : 'download';
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = filename; a.click();
+      URL.revokeObjectURL(url);
+      toast('File downloaded! ⬇️');
+    } catch (err) {
+      toast('Download failed.', 'error');
+    }
+  }
+
+  // ── Alert helper ──
+  function showAlert(el, msg, type) {
+    el.innerHTML = `<div class="alert alert-${type}">${msg}</div>`;
+  }
+
+  // ── Init ──
+  loadGoals();
+</script>
+</body>
+</html>
