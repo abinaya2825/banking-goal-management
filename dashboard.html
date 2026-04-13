@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Vault — Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="shared.css"/>
+  <style>
+    .bg-orbs {
+      position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 0;
+    }
+    .bg-orb {
+      position: absolute; border-radius: 50%; filter: blur(100px);
+      animation: drift 10s ease-in-out infinite;
+    }
+    .bg-orb-1 { width: 500px; height: 500px; background: rgba(201,168,76,0.05); top: -150px; right: -100px; }
+    .bg-orb-2 { width: 350px; height: 350px; background: rgba(82,192,122,0.04); bottom: 0; left: -100px; animation-delay: -4s; }
+    @keyframes drift {
+      0%,100% { transform: translate(0,0); }
+      50% { transform: translate(30px,-30px); }
+    }
+
+    .page { position: relative; z-index: 1; }
+
+    /* Summary cards */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .summary-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.2s;
+    }
+    .summary-card:hover { border-color: var(--border-2); transform: translateY(-2px); }
+
+    .summary-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(to right, var(--gold), var(--gold-light));
+      opacity: 0.6;
+    }
+
+    .summary-icon {
+      font-size: 1.5rem;
+      margin-bottom: 0.75rem;
+    }
+    .summary-val {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--gold-light);
+      margin-bottom: 0.2rem;
+    }
+    .summary-label {
+      font-size: 0.78rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    /* Recent goals preview */
+    .section-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 1.25rem;
+    }
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.3rem;
+      font-weight: 500;
+    }
+
+    .goal-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem 1.25rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      margin-bottom: 0.75rem;
+      transition: all 0.2s;
+      animation: slideUp 0.4s ease both;
+    }
+    .goal-row:hover { border-color: var(--border-2); background: var(--surface-2); }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .goal-row-icon {
+      width: 44px; height: 44px;
+      border-radius: 10px;
+      background: var(--gold-dim);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.3rem;
+      flex-shrink: 0;
+    }
+    .goal-row-icon img {
+      width: 28px; height: 28px; border-radius: 6px; object-fit: cover;
+    }
+
+    .goal-row-info { flex: 1; min-width: 0; }
+    .goal-row-name {
+      font-size: 0.95rem;
+      font-weight: 500;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      margin-bottom: 4px;
+    }
+    .goal-row-sub { font-size: 0.78rem; color: var(--muted); }
+
+    .goal-row-amount {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.1rem;
+      color: var(--gold-light);
+      white-space: nowrap;
+    }
+
+    /* Progress bar */
+    .progress-wrap { margin-top: 6px; }
+    .progress-bar {
+      height: 4px;
+      background: var(--border);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(to right, var(--gold), var(--gold-light));
+      border-radius: 999px;
+      transition: width 1s ease;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 3.5rem 2rem;
+      color: var(--muted);
+    }
+    .empty-state .icon { font-size: 2.5rem; margin-bottom: 1rem; opacity: 0.5; }
+    .empty-state p { font-size: 0.92rem; margin-bottom: 1.25rem; }
+
+    /* Quick action card */
+    .quick-actions {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 0.75rem;
+      margin-bottom: 2.5rem;
+    }
+    .quick-btn {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+      color: var(--text);
+      display: block;
+    }
+    .quick-btn:hover { border-color: var(--gold-dim); background: var(--gold-dim); transform: translateY(-2px); }
+    .quick-btn .qb-icon { font-size: 1.6rem; margin-bottom: 0.5rem; }
+    .quick-btn .qb-label { font-size: 0.82rem; color: var(--muted); }
+  </style>
+</head>
+<body>
+
+  <!-- Background -->
+  <div class="bg-orbs">
+    <div class="bg-orb bg-orb-1"></div>
+    <div class="bg-orb bg-orb-2"></div>
+  </div>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <a class="nav-logo" href="dashboard.html">
+      <div class="nav-logo-icon">🏦</div>
+      <span class="nav-logo-name">Vault</span>
+    </a>
+    <div class="nav-links">
+      <a href="dashboard.html" class="nav-link active">Dashboard</a>
+      <a href="goals.html" class="nav-link">Goals</a>
+    </div>
+    <div class="nav-right">
+      <div class="nav-user">
+        <div class="nav-avatar" id="avatarEl">U</div>
+        <span id="usernameEl">User</span>
+      </div>
+      <button class="btn-logout" onclick="logout()">Sign Out</button>
+    </div>
+  </nav>
+
+  <!-- Page -->
+  <div class="page">
+    <div class="page-header">
+      <h1 id="greetingEl">Good morning 👋</h1>
+      <p>Here's your financial overview for today.</p>
+    </div>
+
+    <!-- Summary -->
+    <div class="summary-grid">
+      <div class="summary-card">
+        <div class="summary-icon">🎯</div>
+        <div class="summary-val" id="totalGoals">—</div>
+        <div class="summary-label">Active Goals</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-icon">💰</div>
+        <div class="summary-val" id="totalTarget">—</div>
+        <div class="summary-label">Total Target</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-icon">📈</div>
+        <div class="summary-val" id="totalSaved">—</div>
+        <div class="summary-label">Total Saved</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-icon">✅</div>
+        <div class="summary-val" id="completedGoals">—</div>
+        <div class="summary-label">Completed</div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="section-header">
+      <h2 class="section-title">Quick Actions</h2>
+    </div>
+    <div class="quick-actions">
+      <a href="goals.html" class="quick-btn">
+        <div class="qb-icon">➕</div>
+        <div class="qb-label">New Goal</div>
+      </a>
+      <a href="goals.html" class="quick-btn">
+        <div class="qb-icon">📋</div>
+        <div class="qb-label">All Goals</div>
+      </a>
+      <a href="goals.html" class="quick-btn">
+        <div class="qb-icon">📎</div>
+        <div class="qb-label">Upload Doc</div>
+      </a>
+      <a href="goals.html" class="quick-btn">
+        <div class="qb-icon">⬇️</div>
+        <div class="qb-label">Download</div>
+      </a>
+    </div>
+
+    <!-- Recent Goals -->
+    <div class="section-header">
+      <h2 class="section-title">Recent Goals</h2>
+      <a href="goals.html" class="btn btn-ghost" style="font-size:0.82rem">View All →</a>
+    </div>
+    <div id="recentGoals">
+      <div class="loading-center">
+        <div class="spinner"></div>
+        <span>Loading goals…</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API = 'http://localhost:5000';
+
+    // Auth guard
+    const user = JSON.parse(localStorage.getItem('vault_user') || 'null');
+    if (!user) window.location.href = 'index.html';
+
+    // Greeting
+    const hour = new Date().getHours();
+    const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+    document.getElementById('greetingEl').textContent = `${greeting}, ${user.username} 👋`;
+    document.getElementById('usernameEl').textContent = user.username;
+    document.getElementById('avatarEl').textContent = user.username[0].toUpperCase();
+
+    function logout() {
+      localStorage.removeItem('vault_user');
+      window.location.href = 'index.html';
+    }
+
+    function fmt(n) {
+      return '₹' + Number(n).toLocaleString('en-IN');
+    }
+
+    async function loadDashboard() {
+      try {
+        const res = await fetch(`${API}/goals`);
+        const { data: goals } = await res.json();
+
+        const total = goals.length;
+        const target = goals.reduce((s, g) => s + g.targetAmount, 0);
+        const saved  = goals.reduce((s, g) => s + (g.savedAmount || 0), 0);
+        const completed = goals.filter(g => (g.savedAmount || 0) >= g.targetAmount).length;
+
+        document.getElementById('totalGoals').textContent = total;
+        document.getElementById('totalTarget').textContent = fmt(target);
+        document.getElementById('totalSaved').textContent = fmt(saved);
+        document.getElementById('completedGoals').textContent = completed;
+
+        const container = document.getElementById('recentGoals');
+
+        if (!goals.length) {
+          container.innerHTML = `
+            <div class="empty-state">
+              <div class="icon">🎯</div>
+              <p>No goals yet. Start by creating your first goal.</p>
+              <a href="goals.html" class="btn btn-primary">Create Goal</a>
+            </div>`;
+          return;
+        }
+
+        container.innerHTML = goals.slice(0, 5).map((g, i) => {
+          const pct = Math.min(100, Math.round(((g.savedAmount || 0) / g.targetAmount) * 100));
+          const iconHtml = g.icon
+            ? `<img src="${g.icon}" alt="" onerror="this.parentElement.textContent='🎯'"/>`
+            : '🎯';
+          return `
+            <div class="goal-row" style="animation-delay:${i*0.07}s">
+              <div class="goal-row-icon">${iconHtml}</div>
+              <div class="goal-row-info">
+                <div class="goal-row-name">${g.name}</div>
+                <div class="goal-row-sub">${pct}% saved</div>
+                <div class="progress-wrap">
+                  <div class="progress-bar">
+                    <div class="progress-fill" style="width:${pct}%"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="goal-row-amount">${fmt(g.targetAmount)}</div>
+            </div>`;
+        }).join('');
+
+      } catch (err) {
+        document.getElementById('recentGoals').innerHTML = `
+          <div class="empty-state">
+            <div class="icon">⚠️</div>
+            <p>Could not connect to the server. Make sure the backend is running on port 5000.</p>
+          </div>`;
+        document.getElementById('totalGoals').textContent = '—';
+      }
+    }
+
+    loadDashboard();
+  </script>
+</body>
+</html>
